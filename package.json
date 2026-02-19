@@ -32,13 +32,16 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",
-    "typescript-eslint": "^8.7.0",
+    "@pollyjs/adapter-fetch": "^6.0.7",
+    "@pollyjs/core": "^6.0.6",
+    "@pollyjs/persister-fs": "^6.0.6",
     "eslint": "^9.14.0",
-    "eslint-plugin-prettier": "^5.2.1",
     "eslint-config-prettier": "^9.1.0",
-    "prettier": "^3.3.3",
+    "eslint-plugin-prettier": "^5.2.1",
     "globals": "^14.0.0",
-    "vitest": "^1.0.0",
-    "typescript": "^5.0.0"
+    "prettier": "^3.3.3",
+    "typescript": "^5.0.0",
+    "typescript-eslint": "^8.7.0",
+    "vitest": "^1.0.0"
   }
 }

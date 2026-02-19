@@ -95,10 +95,13 @@ export interface GrokTextToVideoRequest extends MediaRequest {
 export interface GrokImageToVideoRequest extends MediaRequest {
   model: "grok-imagine/image-to-video";
   input: {
-    prompt: string;
-    image_url: string;
-    aspect_ratio?: "16:9" | "9:16" | "1:1";
-    duration?: "5" | "10";
+    prompt?: string;
+    image_urls?: string[]; // External image URLs (max 1, supports JPEG, PNG, WEBP up to 10MB)
+    task_id?: string; // Alternative: Use previous Grok generation task ID
+    index?: number; // Select image from task (0-5, default 0)
+    mode?: "fun" | "normal" | "spicy"; // Motion style (spicy not available with external images)
+    duration?: "6" | "10"; // Video duration in seconds
+    resolution?: "480p" | "720p"; // Video resolution
   };
 }
 
