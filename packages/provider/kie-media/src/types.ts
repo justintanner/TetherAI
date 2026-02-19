@@ -1,0 +1,212 @@
+// Supported KIE media models
+export type KIEMediaModel =
+  | "kling-3.0/video"
+  | "grok-imagine/text-to-image"
+  | "grok-imagine/image-to-image"
+  | "grok-imagine/text-to-video"
+  | "grok-imagine/image-to-video"
+  | "nano-banana-pro";
+
+// Media generation types
+export type MediaType = "image" | "video";
+
+// Task status
+export type TaskStatus = "pending" | "processing" | "completed" | "failed";
+
+// Kling element for video generation
+export interface KlingElement {
+  name: string;
+  description: string;
+  element_input_urls?: string[];
+  element_input_video_urls?: string[];
+}
+
+// Multi-shot prompt for Kling
+export interface MultiShotPrompt {
+  prompt: string;
+  duration: number;
+}
+
+// Base media request
+export interface MediaRequest {
+  model: KIEMediaModel;
+  callBackUrl?: string;
+}
+
+// Kling 3.0 video request
+export interface KlingVideoRequest extends MediaRequest {
+  model: "kling-3.0/video";
+  input: {
+    prompt?: string;
+    image_urls?: string[];
+    sound: boolean;
+    duration:
+      | "3"
+      | "4"
+      | "5"
+      | "6"
+      | "7"
+      | "8"
+      | "9"
+      | "10"
+      | "11"
+      | "12"
+      | "13"
+      | "14"
+      | "15";
+    aspect_ratio?: "16:9" | "9:16" | "1:1";
+    mode: "std" | "pro";
+    multi_shots: boolean;
+    multi_prompt?: MultiShotPrompt[];
+    kling_elements?: KlingElement[];
+  };
+}
+
+// Grok Imagine text to image request
+export interface GrokTextToImageRequest extends MediaRequest {
+  model: "grok-imagine/text-to-image";
+  input: {
+    prompt: string;
+    aspect_ratio?: "2:3" | "3:2" | "1:1" | "16:9" | "9:16";
+  };
+}
+
+// Grok Imagine image to image request
+export interface GrokImageToImageRequest extends MediaRequest {
+  model: "grok-imagine/image-to-image";
+  input: {
+    prompt: string;
+    image_url: string;
+    aspect_ratio?: "2:3" | "3:2" | "1:1" | "16:9" | "9:16";
+  };
+}
+
+// Grok Imagine text to video request
+export interface GrokTextToVideoRequest extends MediaRequest {
+  model: "grok-imagine/text-to-video";
+  input: {
+    prompt: string;
+    aspect_ratio?: "16:9" | "9:16" | "1:1";
+    duration?: "5" | "10";
+  };
+}
+
+// Grok Imagine image to video request
+export interface GrokImageToVideoRequest extends MediaRequest {
+  model: "grok-imagine/image-to-video";
+  input: {
+    prompt: string;
+    image_url: string;
+    aspect_ratio?: "16:9" | "9:16" | "1:1";
+    duration?: "5" | "10";
+  };
+}
+
+// Nano Banana Pro request
+export interface NanoBananaProRequest extends MediaRequest {
+  model: "nano-banana-pro";
+  input: {
+    prompt: string;
+    image_input?: string[];
+    aspect_ratio?:
+      | "1:1"
+      | "2:3"
+      | "3:2"
+      | "3:4"
+      | "4:3"
+      | "4:5"
+      | "5:4"
+      | "9:16"
+      | "16:9"
+      | "21:9"
+      | "auto";
+    resolution?: "1K" | "2K" | "4K";
+    output_format?: "png" | "jpg";
+  };
+}
+
+// Union type for all media requests
+export type MediaGenerationRequest =
+  | KlingVideoRequest
+  | GrokTextToImageRequest
+  | GrokImageToImageRequest
+  | GrokTextToVideoRequest
+  | GrokImageToVideoRequest
+  | NanoBananaProRequest;
+
+// Task creation response
+export interface TaskResponse {
+  taskId: string;
+}
+
+// Task status details
+export interface TaskStatusDetails {
+  taskId: string;
+  status: TaskStatus;
+  progress?: number;
+  result?: {
+    urls?: string[];
+    video_url?: string;
+    image_url?: string;
+    [key: string]: unknown;
+  };
+  error?: string;
+}
+
+// Completed task result
+export interface TaskResult {
+  taskId: string;
+  status: "completed" | "failed";
+  urls: string[];
+  videoUrl?: string;
+  imageUrl?: string;
+  error?: string;
+  metadata?: Record<string, unknown>;
+}
+
+// Provider options
+export interface KIEMediaOptions {
+  apiKey: string;
+  baseURL?: string;
+  timeout?: number;
+  fetch?: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+}
+
+// Polling options
+export interface PollingOptions {
+  intervalMs?: number;
+  maxAttempts?: number;
+  timeoutMs?: number;
+}
+
+// Wait options
+export interface WaitOptions extends PollingOptions {
+  onProgress?: (status: TaskStatusDetails) => void;
+}
+
+// Error class
+export class KIEMediaError extends Error {
+  readonly status: number;
+  readonly code?: string;
+
+  constructor(message: string, status: number, code?: string) {
+    super(message);
+    this.name = "KIEMediaError";
+    this.status = status;
+    this.code = code;
+  }
+}
+
+// Provider interface
+export interface KIEMediaProvider {
+  createTask(req: MediaGenerationRequest): Promise<TaskResponse>;
+  getTaskStatus(taskId: string): Promise<TaskStatusDetails>;
+  waitForTask(taskId: string, options?: WaitOptions): Promise<TaskResult>;
+  generate(
+    req: MediaGenerationRequest,
+    options?: WaitOptions
+  ): Promise<TaskResult>;
+  validateModel(modelId: string): boolean;
+  getModels(): string[];
+  getModelType(modelId: string): MediaType | null;
+}

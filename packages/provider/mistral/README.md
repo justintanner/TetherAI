@@ -9,7 +9,7 @@
 
 This package provides a **complete, streaming-first solution** for the Mistral AI Chat Completions API.  
 **No external dependencies required** - includes all types, utilities, and middleware built-in.  
-Think of it as *Express for AI providers* with everything included.
+Think of it as _Express for AI providers_ with everything included.
 
 ## What's Included
 
@@ -51,18 +51,18 @@ export MISTRAL_API_KEY=mist-...
 ```ts
 import { mistral } from "@tetherai/mistral";
 
-const provider = mistral({ 
+const provider = mistral({
   apiKey: process.env.MISTRAL_API_KEY!,
-  timeout: 30000,        // 30 second timeout
-  maxRetries: 2          // Built-in retry configuration
+  timeout: 30000, // 30 second timeout
+  maxRetries: 2, // Built-in retry configuration
 });
 
 for await (const chunk of provider.streamChat({
   model: "mistral-large-latest",
   messages: [{ role: "user", content: "Hello!" }],
-  temperature: 0.7,      // Enhanced chat options
+  temperature: 0.7, // Enhanced chat options
   maxTokens: 1000,
-  systemPrompt: "You are a helpful assistant."
+  systemPrompt: "You are a helpful assistant.",
 })) {
   if (chunk.done) break;
   process.stdout.write(chunk.delta);
@@ -77,7 +77,7 @@ const response = await provider.chat({
   messages: [{ role: "user", content: "Hello!" }],
   temperature: 0.5,
   maxTokens: 500,
-  responseFormat: "json_object"  // Get structured responses
+  responseFormat: "json_object", // Get structured responses
 });
 
 console.log(response.content);
@@ -106,11 +106,11 @@ console.log("Max tokens:", maxTokens);
 
 ```ts
 interface MistralOptions {
-  apiKey: string;           // Required: Your Mistral API key
-  baseURL?: string;         // Optional: Custom API endpoint (default: https://api.mistral.ai/v1)
-  timeout?: number;         // Optional: Request timeout in milliseconds (default: 30000)
-  maxRetries?: number;      // Optional: Built-in retry attempts (default: 2)
-  fetch?: typeof fetch;     // Optional: Custom fetch implementation
+  apiKey: string; // Required: Your Mistral API key
+  baseURL?: string; // Optional: Custom API endpoint (default: https://api.mistral.ai/v1)
+  timeout?: number; // Optional: Request timeout in milliseconds (default: 30000)
+  maxRetries?: number; // Optional: Built-in retry attempts (default: 2)
+  fetch?: typeof fetch; // Optional: Custom fetch implementation
 }
 ```
 
@@ -118,17 +118,18 @@ interface MistralOptions {
 
 ```ts
 const stream = provider.streamChat({
-  model: "mistral-large-latest",        // Required: Model to use
-  messages: [                            // Required: Conversation history
-    { role: "user", content: "Hello" }
+  model: "mistral-large-latest", // Required: Model to use
+  messages: [
+    // Required: Conversation history
+    { role: "user", content: "Hello" },
   ],
-  temperature: 0.7,                      // Optional: Randomness (0.0 to 2.0)
-  maxTokens: 1000,                       // Optional: Max tokens to generate
-  topP: 0.9,                            // Optional: Nucleus sampling
-  frequencyPenalty: 0.1,                // Optional: Repetition penalty
-  presencePenalty: 0.1,                 // Optional: Topic penalty
-  stop: ["\n", "END"],                  // Optional: Stop sequences
-  systemPrompt: "You are helpful"       // Optional: System instructions
+  temperature: 0.7, // Optional: Randomness (0.0 to 2.0)
+  maxTokens: 1000, // Optional: Max tokens to generate
+  topP: 0.9, // Optional: Nucleus sampling
+  frequencyPenalty: 0.1, // Optional: Repetition penalty
+  presencePenalty: 0.1, // Optional: Topic penalty
+  stop: ["\n", "END"], // Optional: Stop sequences
+  systemPrompt: "You are helpful", // Optional: System instructions
 });
 
 // Process streaming response
@@ -146,7 +147,7 @@ const response = await provider.chat({
   messages: [{ role: "user", content: "Hello" }],
   temperature: 0.7,
   maxTokens: 1000,
-  responseFormat: "json_object"  // Get structured responses
+  responseFormat: "json_object", // Get structured responses
 });
 
 console.log(response.content);
@@ -163,22 +164,22 @@ const models = await provider.getModels();
 // Returns: ['mistral-tiny', 'mistral-small', 'mistral-medium', 'mistral-large']
 
 // Validate model ID
-const isValid = provider.validateModel("mistral-large-latest");     // true
-const isInvalid = provider.validateModel("gpt-4");                 // false
+const isValid = provider.validateModel("mistral-large-latest"); // true
+const isInvalid = provider.validateModel("gpt-4"); // false
 
 // Get token limits
-const maxTokens = provider.getMaxTokens("mistral-large-latest");   // 32768
+const maxTokens = provider.getMaxTokens("mistral-large-latest"); // 32768
 const smallTokens = provider.getMaxTokens("mistral-small-latest"); // 32768
 ```
 
 ## Supported Models
 
-| Model | Context | Description |
-|-------|---------|-------------|
-| `mistral-tiny` | 32K | Fast and efficient model |
-| `mistral-small` | 32K | Balanced performance and speed |
-| `mistral-medium` | 32K | High-quality responses |
-| `mistral-large` | 32K | Most capable model |
+| Model            | Context | Description                    |
+| ---------------- | ------- | ------------------------------ |
+| `mistral-tiny`   | 32K     | Fast and efficient model       |
+| `mistral-small`  | 32K     | Balanced performance and speed |
+| `mistral-medium` | 32K     | High-quality responses         |
+| `mistral-large`  | 32K     | Most capable model             |
 
 ## Error Handling
 
@@ -190,12 +191,12 @@ import { MistralError } from "@tetherai/mistral";
 try {
   const response = await provider.chat({
     model: "mistral-large-latest",
-    messages: [{ role: "user", content: "Hello" }]
+    messages: [{ role: "user", content: "Hello" }],
   });
 } catch (error) {
   if (error instanceof MistralError) {
     console.error(`Mistral API Error ${error.status}: ${error.message}`);
-    
+
     switch (error.status) {
       case 401:
         console.error("Invalid API key");
@@ -231,13 +232,13 @@ import { withRetry } from "@tetherai/mistral";
 const retryProvider = withRetry(provider, {
   maxRetries: 3,
   retryDelay: 1000,
-  shouldRetry: (error) => error.status >= 500
+  shouldRetry: (error) => error.status >= 500,
 });
 
 // Use with automatic retries
 const response = await retryProvider.chat({
   model: "mistral-large-latest",
-  messages: [{ role: "user", content: "Hello" }]
+  messages: [{ role: "user", content: "Hello" }],
 });
 ```
 
@@ -248,13 +249,13 @@ import { withFallback } from "@tetherai/mistral";
 
 const fallbackProvider = withFallback(provider, {
   fallbackProvider: backupProvider,
-  shouldFallback: (error) => error.status === 429
+  shouldFallback: (error) => error.status === 429,
 });
 
 // Automatically fallback on rate limits
 const response = await fallbackProvider.chat({
   model: "mistral-large-latest",
-  messages: [{ role: "user", content: "Hello" }]
+  messages: [{ role: "user", content: "Hello" }],
 });
 ```
 
@@ -266,11 +267,15 @@ const response = await fallbackProvider.chat({
 const stream = provider.streamChat({
   model: "mistral-large-latest",
   messages: [
-    { role: "user", content: "Write a Python function to calculate fibonacci numbers" }
+    {
+      role: "user",
+      content: "Write a Python function to calculate fibonacci numbers",
+    },
   ],
-  systemPrompt: "You are a helpful coding assistant. Always provide working code examples.",
+  systemPrompt:
+    "You are a helpful coding assistant. Always provide working code examples.",
   temperature: 0.3,
-  maxTokens: 2000
+  maxTokens: 2000,
 });
 
 let fullResponse = "";
@@ -294,13 +299,13 @@ const backupProvider = openAI({ apiKey: process.env.OPENAI_API_KEY! });
 
 const fallbackProvider = withFallback(mistralProvider, {
   fallbackProvider: backupProvider,
-  shouldFallback: (error) => error.status === 429 || error.status >= 500
+  shouldFallback: (error) => error.status === 429 || error.status >= 500,
 });
 
 try {
   const response = await fallbackProvider.chat({
     model: "mistral-large-latest",
-    messages: [{ role: "user", content: "Hello" }]
+    messages: [{ role: "user", content: "Hello" }],
   });
   console.log("Response:", response.content);
 } catch (error) {
@@ -319,12 +324,12 @@ const customProvider = mistral({
       ...options,
       headers: {
         ...options.headers,
-        'X-Custom-Header': 'value'
-      }
+        "X-Custom-Header": "value",
+      },
     };
-    
+
     return fetch(url, customOptions);
-  }
+  },
 });
 ```
 
@@ -333,23 +338,25 @@ const customProvider = mistral({
 Full TypeScript support with zero `any` types:
 
 ```ts
-import { 
-  mistral, 
-  MistralOptions, 
-  MistralError, 
+import {
+  mistral,
+  MistralOptions,
+  MistralError,
   ChatResponse,
-  StreamChatOptions 
+  StreamChatOptions,
 } from "@tetherai/mistral";
 
 const options: MistralOptions = {
   apiKey: process.env.MISTRAL_API_KEY!,
   baseURL: "https://api.mistral.ai/v1",
-  timeout: 30000
+  timeout: 30000,
 };
 
 const provider = mistral(options);
 
-async function chatWithMistral(options: StreamChatOptions): Promise<ChatResponse> {
+async function chatWithMistral(
+  options: StreamChatOptions
+): Promise<ChatResponse> {
   try {
     return await provider.chat(options);
   } catch (error) {
@@ -369,18 +376,18 @@ Works everywhere from Node.js to Cloudflare Workers:
 // Cloudflare Worker
 export default {
   async fetch(request: Request): Promise<Response> {
-    const provider = mistral({ 
+    const provider = mistral({
       apiKey: env.MISTRAL_API_KEY,
-      fetch: globalThis.fetch 
+      fetch: globalThis.fetch,
     });
-    
+
     const response = await provider.chat({
       model: "mistral-large-latest",
-      messages: [{ role: "user", content: "Hello from Cloudflare!" }]
+      messages: [{ role: "user", content: "Hello from Cloudflare!" }],
     });
-    
+
     return new Response(response.content);
-  }
+  },
 };
 ```
 

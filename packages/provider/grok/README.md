@@ -9,7 +9,7 @@
 
 This package provides a **complete, streaming-first solution** for the Grok AI (xAI) Chat Completions API.  
 **No external dependencies required** - includes all types, utilities, and middleware built-in.  
-Think of it as *Express for AI providers* with everything included.
+Think of it as _Express for AI providers_ with everything included.
 
 ## What's Included
 
@@ -51,18 +51,18 @@ export GROK_API_KEY=sk-...
 ```ts
 import { grok } from "@tetherai/grok";
 
-const provider = grok({ 
+const provider = grok({
   apiKey: process.env.GROK_API_KEY!,
-  timeout: 30000,        // 30 second timeout
-  maxRetries: 2          // Built-in retry configuration
+  timeout: 30000, // 30 second timeout
+  maxRetries: 2, // Built-in retry configuration
 });
 
 for await (const chunk of provider.streamChat({
   model: "grok-beta",
   messages: [{ role: "user", content: "Hello!" }],
-  temperature: 0.7,      // Enhanced chat options
+  temperature: 0.7, // Enhanced chat options
   maxTokens: 1000,
-  systemPrompt: "You are a helpful assistant."
+  systemPrompt: "You are a helpful assistant.",
 })) {
   if (chunk.done) break;
   process.stdout.write(chunk.delta);
@@ -77,7 +77,7 @@ const response = await provider.chat({
   messages: [{ role: "user", content: "Hello!" }],
   temperature: 0.5,
   maxTokens: 500,
-  responseFormat: "json_object"  // Get structured responses
+  responseFormat: "json_object", // Get structured responses
 });
 
 console.log(response.content);
@@ -102,20 +102,20 @@ console.log("Max tokens:", maxTokens);
 
 ## Parameter Mapping
 
-| TS Interface Field  | Grok API Field             |
-|---------------------|----------------------------|
-| `maxTokens`         | `max_tokens`               |
-| `topP`              | `top_p`                    |
-| `responseFormat`    | `response_format.type`     |
+| TS Interface Field | Grok API Field         |
+| ------------------ | ---------------------- |
+| `maxTokens`        | `max_tokens`           |
+| `topP`             | `top_p`                |
+| `responseFormat`   | `response_format.type` |
 
 Grok follows an OpenAI‑compatible schema and these fields are mapped automatically.
 
 ## Middleware Compatibility
 
 | Feature        | Support |
-|----------------|---------|
-| `withRetry`    | ✅       |
-| `withFallback` | ✅       |
+| -------------- | ------- |
+| `withRetry`    | ✅      |
+| `withFallback` | ✅      |
 
 ## Configuration Options
 
@@ -123,10 +123,10 @@ Grok follows an OpenAI‑compatible schema and these fields are mapped automatic
 
 ```ts
 interface GrokOptions {
-  apiKey: string;                    // Required: Your xAI API key
-  baseURL?: string;                  // Custom API endpoint (default: https://api.x.ai/v1)
-  timeout?: number;                  // Request timeout in ms (default: 30000)
-  fetch?: Function;                  // Custom fetch implementation
+  apiKey: string; // Required: Your xAI API key
+  baseURL?: string; // Custom API endpoint (default: https://api.x.ai/v1)
+  timeout?: number; // Request timeout in ms (default: 30000)
+  fetch?: Function; // Custom fetch implementation
 }
 ```
 
@@ -134,16 +134,16 @@ interface GrokOptions {
 
 Grok provider supports the following models:
 
-| Model | Context Window | Description |
-|-------|----------------|-------------|
-| `grok-beta` | 8K tokens | Base Grok model |
-| `grok-beta-vision` | 128K tokens | Grok with vision capabilities |
-| `grok-beta-2` | 128K tokens | Enhanced Grok model |
-| `grok-beta-2-vision` | 128K tokens | Enhanced Grok with vision |
-| `grok-2` | 128K tokens | Latest Grok 2 model |
-| `grok-2-vision` | 128K tokens | Latest Grok 2 with vision |
-| `grok-2-mini` | 128K tokens | Compact Grok 2 model |
-| `grok-2-mini-vision` | 128K tokens | Compact Grok 2 with vision |
+| Model                | Context Window | Description                   |
+| -------------------- | -------------- | ----------------------------- |
+| `grok-beta`          | 8K tokens      | Base Grok model               |
+| `grok-beta-vision`   | 128K tokens    | Grok with vision capabilities |
+| `grok-beta-2`        | 128K tokens    | Enhanced Grok model           |
+| `grok-beta-2-vision` | 128K tokens    | Enhanced Grok with vision     |
+| `grok-2`             | 128K tokens    | Latest Grok 2 model           |
+| `grok-2-vision`      | 128K tokens    | Latest Grok 2 with vision     |
+| `grok-2-mini`        | 128K tokens    | Compact Grok 2 model          |
+| `grok-2-mini-vision` | 128K tokens    | Compact Grok 2 with vision    |
 
 > **Note**: Vision models support image input and have larger context windows.
 
@@ -157,13 +157,13 @@ import { withRetry } from "@tetherai/grok";
 const retryProvider = withRetry(provider, {
   maxRetries: 3,
   retryDelay: 1000,
-  shouldRetry: (error) => error.status >= 500
+  shouldRetry: (error) => error.status >= 500,
 });
 
 // Use with automatic retries
 const response = await retryProvider.chat({
   model: "grok-beta",
-  messages: [{ role: "user", content: "Hello" }]
+  messages: [{ role: "user", content: "Hello" }],
 });
 ```
 
@@ -174,13 +174,13 @@ import { withFallback } from "@tetherai/grok";
 
 const fallbackProvider = withFallback(provider, {
   fallbackProvider: backupProvider,
-  shouldFallback: (error) => error.status === 429
+  shouldFallback: (error) => error.status === 429,
 });
 
 // Automatically fallback on rate limits
 const response = await fallbackProvider.chat({
   model: "grok-beta",
-  messages: [{ role: "user", content: "Hello" }]
+  messages: [{ role: "user", content: "Hello" }],
 });
 ```
 
@@ -192,11 +192,15 @@ const response = await fallbackProvider.chat({
 const stream = provider.streamChat({
   model: "grok-beta",
   messages: [
-    { role: "user", content: "Write a Python function to calculate fibonacci numbers" }
+    {
+      role: "user",
+      content: "Write a Python function to calculate fibonacci numbers",
+    },
   ],
-  systemPrompt: "You are a helpful coding assistant. Always provide working code examples.",
+  systemPrompt:
+    "You are a helpful coding assistant. Always provide working code examples.",
   temperature: 0.3,
-  maxTokens: 2000
+  maxTokens: 2000,
 });
 
 let fullResponse = "";
@@ -220,13 +224,13 @@ const backupProvider = openAI({ apiKey: process.env.OPENAI_API_KEY! });
 
 const fallbackProvider = withFallback(grokProvider, {
   fallbackProvider: backupProvider,
-  shouldFallback: (error) => error.status === 429 || error.status >= 500
+  shouldFallback: (error) => error.status === 429 || error.status >= 500,
 });
 
 try {
   const response = await fallbackProvider.chat({
     model: "grok-beta",
-    messages: [{ role: "user", content: "Hello" }]
+    messages: [{ role: "user", content: "Hello" }],
   });
   console.log("Response:", response.content);
 } catch (error) {
@@ -245,12 +249,12 @@ const customProvider = grok({
       ...options,
       headers: {
         ...options.headers,
-        'X-Custom-Header': 'value'
-      }
+        "X-Custom-Header": "value",
+      },
     };
-    
+
     return fetch(url, customOptions);
-  }
+  },
 });
 ```
 
@@ -259,18 +263,18 @@ const customProvider = grok({
 Full TypeScript support with zero `any` types:
 
 ```ts
-import { 
-  grok, 
-  GrokOptions, 
-  GrokError, 
+import {
+  grok,
+  GrokOptions,
+  GrokError,
   ChatResponse,
-  StreamChatOptions 
+  StreamChatOptions,
 } from "@tetherai/grok";
 
 const options: GrokOptions = {
   apiKey: process.env.GROK_API_KEY!,
   baseURL: "https://api.x.ai/v1",
-  timeout: 30000
+  timeout: 30000,
 };
 
 const provider = grok(options);
@@ -295,18 +299,18 @@ Works everywhere from Node.js to Cloudflare Workers:
 // Cloudflare Worker
 export default {
   async fetch(request: Request): Promise<Response> {
-    const provider = grok({ 
+    const provider = grok({
       apiKey: env.GROK_API_KEY,
-      fetch: globalThis.fetch 
+      fetch: globalThis.fetch,
     });
-    
+
     const response = await provider.chat({
       model: "grok-beta",
-      messages: [{ role: "user", content: "Hello from Cloudflare!" }]
+      messages: [{ role: "user", content: "Hello from Cloudflare!" }],
     });
-    
+
     return new Response(response.content);
-  }
+  },
 };
 ```
 

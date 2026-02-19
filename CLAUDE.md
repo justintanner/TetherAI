@@ -33,6 +33,7 @@ pnpm run format               # Prettier
 ### Provider structure
 
 Every provider package follows this layout:
+
 - `src/index.ts` — re-exports everything
 - `src/<provider>.ts` — implements the `Provider` interface: `streamChat()`, `chat()`, `getModels()`, `validateModel()`, `getMaxTokens()`
 - `src/types.ts` — types + provider-specific Error class (extends Error with `status: number`)

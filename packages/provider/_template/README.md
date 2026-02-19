@@ -41,19 +41,19 @@ for await (const chunk of provider.streamChat(request)) {
 
 ## What's Included
 
-- **Core Types**: `ChatRequest`, `ChatMessage`, `Provider`, etc.  
-- **[PROVIDER_NAME] Implementation**: Streaming chat completion  
-- **SSE Utilities**: Server-Sent Events handling  
-- **Middleware**: Retry and fallback functionality  
-- **Error Handling**: [PROVIDER_NAME]-specific error types  
+- **Core Types**: `ChatRequest`, `ChatMessage`, `Provider`, etc.
+- **[PROVIDER_NAME] Implementation**: Streaming chat completion
+- **SSE Utilities**: Server-Sent Events handling
+- **Middleware**: Retry and fallback functionality
+- **Error Handling**: [PROVIDER_NAME]-specific error types
 
 ## Middleware Usage
 
 ```typescript
 import { [PROVIDER_FUNCTION], withRetry, withFallback } from "@tetherai/[PROVIDER_NAME]";
 
-const baseProvider = [PROVIDER_FUNCTION]({ 
-  apiKey: process.env.[PROVIDER_UPPER]_API_KEY! 
+const baseProvider = [PROVIDER_FUNCTION]({
+  apiKey: process.env.[PROVIDER_UPPER]_API_KEY!
 });
 
 // Add retry logic

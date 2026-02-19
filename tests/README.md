@@ -77,18 +77,18 @@ pnpm run test:ui
 ### **Test Structure**
 
 ```typescript
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from "vitest";
 
-describe('Component Name', () => {
-  it('should do something specific', () => {
+describe("Component Name", () => {
+  it("should do something specific", () => {
     // Arrange
-    const input = 'test';
-    
+    const input = "test";
+
     // Act
     const result = someFunction(input);
-    
+
     // Assert
-    expect(result).toBe('expected');
+    expect(result).toBe("expected");
   });
 });
 ```

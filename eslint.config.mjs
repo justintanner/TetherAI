@@ -4,50 +4,56 @@ import prettier from "eslint-plugin-prettier";
 import globals from "globals";
 
 export default [
-    {
-        ignores: [
-            "**/node_modules/**",
-            "**/dist/**",
-            "**/.next/**",
-            "examples/*/node_modules/**",
-            "examples/*/.next/**",
+  {
+    ignores: [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/.next/**",
+      "examples/*/node_modules/**",
+      "examples/*/.next/**",
+    ],
+  },
+  eslint.configs.recommended,
+  {
+    files: [
+      "**/*.mjs",
+      "**/*.cjs",
+      "**/*.js",
+      "**/scripts/*.mjs",
+      "**/scripts/*.cjs",
+    ],
+    languageOptions: {
+      sourceType: "module",
+      parserOptions: { ecmaVersion: "latest" },
+      globals: {
+        ...globals.node,
+      },
+    },
+    rules: {
+      "no-console": "off",
+    },
+  },
+  ...tseslint.configs.recommended.map((cfg) => ({
+    ...cfg,
+    files: ["**/*.ts", "**/*.tsx"],
+  })),
+  {
+    files: ["**/*.ts", "**/*.tsx"],
+    languageOptions: {
+      parserOptions: {
+        project: [
+          "./tsconfig.base.json",
+          "./packages/provider/openai/tsconfig.json",
+          "./packages/provider/anthropic/tsconfig.json",
+          "./examples/nextjs/tsconfig.json",
         ],
+        tsconfigRootDir: new URL(".", import.meta.url).pathname,
+      },
     },
-    eslint.configs.recommended,
-    {
-        files: ["**/*.mjs", "**/*.cjs", "**/*.js", "**/scripts/*.mjs", "**/scripts/*.cjs"],
-        languageOptions: {
-            sourceType: "module",
-            parserOptions: { ecmaVersion: "latest" },
-            globals: {
-                ...globals.node,
-            },
-        },
-        rules: {
-            "no-console": "off",
-        },
+    plugins: { prettier },
+    rules: {
+      "prettier/prettier": ["error", { endOfLine: "auto" }],
+      "@typescript-eslint/no-explicit-any": "error",
     },
-    ...tseslint.configs.recommended.map((cfg) => ({
-        ...cfg,
-        files: ["**/*.ts", "**/*.tsx"],
-    })),
-    {
-        files: ["**/*.ts", "**/*.tsx"],
-        languageOptions: {
-            parserOptions: {
-                project: [
-                    "./tsconfig.base.json",
-                    "./packages/provider/openai/tsconfig.json",
-                    "./packages/provider/anthropic/tsconfig.json",
-                    "./examples/nextjs/tsconfig.json",
-                ],
-                tsconfigRootDir: new URL(".", import.meta.url).pathname,
-            },
-        },
-        plugins: { prettier },
-        rules: {
-            "prettier/prettier": ["error", { endOfLine: "auto" }],
-            "@typescript-eslint/no-explicit-any": "error",
-        },
-    },
+  },
 ];

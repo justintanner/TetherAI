@@ -9,7 +9,7 @@
 
 This package provides a **complete, streaming-first solution** for the OpenAI Chat Completions API.  
 **No external dependencies required** - includes all types, utilities, and middleware built-in.  
-Think of it as *Express for AI providers* with everything included.
+Think of it as _Express for AI providers_ with everything included.
 
 ## What's Included
 
@@ -51,18 +51,18 @@ export OPENAI_API_KEY=sk-...
 ```ts
 import { openAI } from "@tetherai/openai";
 
-const provider = openAI({ 
+const provider = openAI({
   apiKey: process.env.OPENAI_API_KEY!,
-  timeout: 30000,        // 30 second timeout
-  maxRetries: 2          // Built-in retry configuration
+  timeout: 30000, // 30 second timeout
+  maxRetries: 2, // Built-in retry configuration
 });
 
 for await (const chunk of provider.streamChat({
   model: "gpt-4o-mini",
   messages: [{ role: "user", content: "Hello!" }],
-  temperature: 0.7,      // Enhanced chat options
+  temperature: 0.7, // Enhanced chat options
   maxTokens: 1000,
-  systemPrompt: "You are a helpful assistant."
+  systemPrompt: "You are a helpful assistant.",
 })) {
   if (chunk.done) break;
   process.stdout.write(chunk.delta);
@@ -77,7 +77,7 @@ const response = await provider.chat({
   messages: [{ role: "user", content: "Hello!" }],
   temperature: 0.5,
   maxTokens: 500,
-  responseFormat: "json_object"  // Get structured responses
+  responseFormat: "json_object", // Get structured responses
 });
 
 console.log(response.content);
@@ -110,11 +110,11 @@ import { openAI, withRetry } from "@tetherai/openai";
 export const runtime = "edge";
 
 const provider = withRetry(
-  openAI({ 
+  openAI({
     apiKey: process.env.OPENAI_API_KEY!,
     timeout: 30000,
     organization: process.env.OPENAI_ORG_ID, // Organization support
-  }), 
+  }),
   { retries: 2 }
 );
 
@@ -127,20 +127,25 @@ export async function POST(req: NextRequest) {
     maxTokens: body.maxTokens || 1000,
     systemPrompt: body.systemPrompt,
     stop: body.stopSequences,
-    responseFormat: body.responseFormat
+    responseFormat: body.responseFormat,
   });
 
-  return new Response(new ReadableStream({
-    async start(controller) {
-      const encoder = new TextEncoder();
-      for await (const chunk of stream) {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
-      }
-      controller.close();
-    },
-  }), {
-    headers: { "Content-Type": "text/event-stream" },
-  });
+  return new Response(
+    new ReadableStream({
+      async start(controller) {
+        const encoder = new TextEncoder();
+        for await (const chunk of stream) {
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`)
+          );
+        }
+        controller.close();
+      },
+    }),
+    {
+      headers: { "Content-Type": "text/event-stream" },
+    }
+  );
 }
 ```
 
@@ -152,34 +157,35 @@ export async function POST(req: NextRequest) {
 const response = await provider.chat({
   model: "gpt-4o-mini",
   messages: [{ role: "user", content: "Write a story" }],
-  
+
   // Core parameters
-  temperature: 0.8,           // 0-2, controls randomness
-  maxTokens: 1000,            // Maximum response length
-  topP: 0.9,                  // 0-1, nucleus sampling
-  
+  temperature: 0.8, // 0-2, controls randomness
+  maxTokens: 1000, // Maximum response length
+  topP: 0.9, // 0-1, nucleus sampling
+
   // Advanced parameters
-  frequencyPenalty: 0.1,      // -2.0 to 2.0, reduce repetition
-  presencePenalty: 0.1,       // -2.0 to 2.0, encourage new topics
-  
+  frequencyPenalty: 0.1, // -2.0 to 2.0, reduce repetition
+  presencePenalty: 0.1, // -2.0 to 2.0, encourage new topics
+
   // Stop sequences
-  stop: ["\n\n", "END"],      // Stop generation at these sequences
-  
+  stop: ["\n\n", "END"], // Stop generation at these sequences
+
   // System behavior
   systemPrompt: "You are a creative storyteller", // Alternative to system messages
-  
+
   // Response format
   responseFormat: "json_object", // Get structured JSON responses
-  
+
   // Safety and moderation
-  safeMode: true,              // Enable content filtering
-  
+  safeMode: true, // Enable content filtering
+
   // Metadata
-  user: "user123",             // User identifier for moderation
-  metadata: {                  // Custom metadata
+  user: "user123", // User identifier for moderation
+  metadata: {
+    // Custom metadata
     sessionId: "abc123",
-    source: "web"
-  }
+    source: "web",
+  },
 });
 ```
 
@@ -189,13 +195,14 @@ const response = await provider.chat({
 for await (const chunk of provider.streamChat({
   model: "gpt-4o-mini",
   messages: [{ role: "user", content: "Explain quantum physics" }],
-  temperature: 0.3,            // More focused responses
-  maxTokens: 2000,             // Longer explanation
-  topP: 0.95,                 // High quality sampling
-  frequencyPenalty: 0.2,      // Reduce repetition
-  presencePenalty: 0.1,       // Encourage new concepts
+  temperature: 0.3, // More focused responses
+  maxTokens: 2000, // Longer explanation
+  topP: 0.95, // High quality sampling
+  frequencyPenalty: 0.2, // Reduce repetition
+  presencePenalty: 0.1, // Encourage new concepts
   stop: ["\n\n", "In conclusion"], // Natural stopping points
-  systemPrompt: "You are a physics professor explaining complex concepts simply"
+  systemPrompt:
+    "You are a physics professor explaining complex concepts simply",
 })) {
   if (chunk.done) {
     console.log(`\nFinished: ${chunk.finishReason}`);
@@ -212,12 +219,12 @@ for await (const chunk of provider.streamChat({
 
 ```ts
 interface OpenAIOptions {
-  apiKey: string;                    // Required: Your OpenAI API key
-  baseURL?: string;                  // Custom API endpoint (default: https://api.openai.com/v1)
-  organization?: string;             // OpenAI organization ID
-  maxRetries?: number;               // Maximum retry attempts
-  timeout?: number;                  // Request timeout in ms (default: 30000)
-  fetch?: Function;                  // Custom fetch implementation
+  apiKey: string; // Required: Your OpenAI API key
+  baseURL?: string; // Custom API endpoint (default: https://api.openai.com/v1)
+  organization?: string; // OpenAI organization ID
+  maxRetries?: number; // Maximum retry attempts
+  timeout?: number; // Request timeout in ms (default: 30000)
+  fetch?: Function; // Custom fetch implementation
 }
 ```
 
@@ -228,11 +235,11 @@ import { openAI } from "@tetherai/openai";
 
 const provider = openAI({
   apiKey: process.env.OPENAI_API_KEY!,
-  baseURL: "https://api.openai.com/v1",     // Custom endpoint
-  organization: process.env.OPENAI_ORG_ID,   // Organization support
-  timeout: 60000,                           // 60 second timeout
-  maxRetries: 3,                            // 3 retry attempts
-  fetch: customFetch                         // Custom fetch for proxies, etc.
+  baseURL: "https://api.openai.com/v1", // Custom endpoint
+  organization: process.env.OPENAI_ORG_ID, // Organization support
+  timeout: 60000, // 60 second timeout
+  maxRetries: 3, // 3 retry attempts
+  fetch: customFetch, // Custom fetch for proxies, etc.
 });
 ```
 
@@ -245,15 +252,12 @@ Automatically retries failed requests with exponential backoff:
 ```ts
 import { openAI, withRetry } from "@tetherai/openai";
 
-const provider = withRetry(
-  openAI({ apiKey: process.env.OPENAI_API_KEY! }),
-  {
-    retries: 3,        // Number of retry attempts
-    baseMs: 300,       // Base delay in milliseconds
-    factor: 2,         // Exponential backoff factor
-    jitter: true       // Add randomness to prevent thundering herd
-  }
-);
+const provider = withRetry(openAI({ apiKey: process.env.OPENAI_API_KEY! }), {
+  retries: 3, // Number of retry attempts
+  baseMs: 300, // Base delay in milliseconds
+  factor: 2, // Exponential backoff factor
+  jitter: true, // Add randomness to prevent thundering herd
+});
 ```
 
 **Smart Error Detection**: Only retries on transient errors (429 rate limits, 5xx server errors)
@@ -266,14 +270,19 @@ Chain multiple providers for automatic failover:
 import { openAI, withFallback, withRetry } from "@tetherai/openai";
 import { anthropic } from "@tetherai/anthropic";
 
-const provider = withFallback([
-  withRetry(openAI({ apiKey: process.env.OPENAI_API_KEY! }), { retries: 2 }),
-  withRetry(anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! }), { retries: 2 })
-], {
-  onFallback: (error, providerIndex) => {
-    console.log(`Provider ${providerIndex} failed, trying next...`);
+const provider = withFallback(
+  [
+    withRetry(openAI({ apiKey: process.env.OPENAI_API_KEY! }), { retries: 2 }),
+    withRetry(anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! }), {
+      retries: 2,
+    }),
+  ],
+  {
+    onFallback: (error, providerIndex) => {
+      console.log(`Provider ${providerIndex} failed, trying next...`);
+    },
   }
-});
+);
 ```
 
 ## Error Handling
@@ -288,7 +297,7 @@ try {
 } catch (error) {
   if (error instanceof OpenAIError) {
     console.log(`OpenAI error ${error.status}: ${error.message}`);
-    
+
     // Handle specific error types
     switch (error.status) {
       case 401: // Invalid API key

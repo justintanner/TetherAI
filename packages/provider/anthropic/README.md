@@ -9,7 +9,7 @@
 
 This package provides a **complete, streaming-first solution** for the Anthropic Messages API.  
 **No external dependencies required** - includes all types, utilities, and middleware built-in.  
-Think of it as *Express for AI providers* with everything included.
+Think of it as _Express for AI providers_ with everything included.
 
 ## What's Included
 
@@ -53,18 +53,18 @@ export ANTHROPIC_API_KEY=sk-ant-...
 ```ts
 import { anthropic } from "@tetherai/anthropic";
 
-const provider = anthropic({ 
+const provider = anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
-  timeout: 30000,        // 30 second timeout
-  maxRetries: 2          // Built-in retry configuration
+  timeout: 30000, // 30 second timeout
+  maxRetries: 2, // Built-in retry configuration
 });
 
 for await (const chunk of provider.streamChat({
   model: "claude-3-5-sonnet-20240620",
   messages: [{ role: "user", content: "Hello!" }],
-  temperature: 0.7,      // Enhanced chat options
+  temperature: 0.7, // Enhanced chat options
   maxTokens: 1000,
-  systemPrompt: "You are a helpful assistant."
+  systemPrompt: "You are a helpful assistant.",
 })) {
   if (chunk.done) break;
   process.stdout.write(chunk.delta);
@@ -79,7 +79,7 @@ const response = await provider.chat({
   messages: [{ role: "user", content: "Hello!" }],
   temperature: 0.5,
   maxTokens: 500,
-  responseFormat: "json_object"  // Get structured responses
+  responseFormat: "json_object", // Get structured responses
 });
 
 console.log(response.content);
@@ -112,11 +112,11 @@ import { anthropic, withRetry } from "@tetherai/anthropic";
 export const runtime = "edge";
 
 const provider = withRetry(
-  anthropic({ 
+  anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY!,
     timeout: 30000,
     apiVersion: "2023-06-01", // API version control
-  }), 
+  }),
   { retries: 2 }
 );
 
@@ -129,20 +129,25 @@ export async function POST(req: NextRequest) {
     maxTokens: body.maxTokens || 1000,
     systemPrompt: body.systemPrompt,
     stop: body.stopSequences,
-    responseFormat: body.responseFormat
+    responseFormat: body.responseFormat,
   });
 
-  return new Response(new ReadableStream({
-    async start(controller) {
-      const encoder = new TextEncoder();
-      for await (const chunk of stream) {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`));
-      }
-      controller.close();
-    },
-  }), {
-    headers: { "Content-Type": "text/event-stream" },
-  });
+  return new Response(
+    new ReadableStream({
+      async start(controller) {
+        const encoder = new TextEncoder();
+        for await (const chunk of stream) {
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify(chunk)}\n\n`)
+          );
+        }
+        controller.close();
+      },
+    }),
+    {
+      headers: { "Content-Type": "text/event-stream" },
+    }
+  );
 }
 ```
 
@@ -154,44 +159,45 @@ export async function POST(req: NextRequest) {
 const response = await provider.chat({
   model: "claude-3-5-sonnet-20240620",
   messages: [{ role: "user", content: "Write a story" }],
-  
+
   // Core parameters
-  temperature: 0.8,           // 0-1, controls randomness
-  maxTokens: 1000,            // Maximum response length
-  topP: 0.9,                  // 0-1, nucleus sampling
-  topK: 40,                   // 0-100, top-k sampling (Claude specific)
-  
+  temperature: 0.8, // 0-1, controls randomness
+  maxTokens: 1000, // Maximum response length
+  topP: 0.9, // 0-1, nucleus sampling
+  topK: 40, // 0-100, top-k sampling (Claude specific)
+
   // Stop sequences
-  stop: ["\n\n", "END"],      // Stop generation at these sequences
-  
+  stop: ["\n\n", "END"], // Stop generation at these sequences
+
   // System behavior
   systemPrompt: "You are a creative storyteller", // Alternative to system messages
-  
+
   // Response format
   responseFormat: "json_object", // Get structured JSON responses
-  
+
   // Safety and moderation
-  safeMode: true,              // Enable content filtering
-  
+  safeMode: true, // Enable content filtering
+
   // Metadata
-  user: "user123",             // User identifier for moderation
-  metadata: {                  // Custom metadata
+  user: "user123", // User identifier for moderation
+  metadata: {
+    // Custom metadata
     sessionId: "abc123",
-    source: "web"
-  }
+    source: "web",
+  },
 });
 ```
 
 ## Parameter Mapping
 
-| TS Interface Field  | Anthropic API Field        |
-|---------------------|----------------------------|
-| `maxTokens`         | `max_tokens`               |
-| `topP`              | `top_p`                    |
-| `topK`              | `top_k`                    |
-| `responseFormat`    | `response_format.type`     |
-| `user`              | `metadata.user`            |
-| `metadata`          | `metadata` (merged)        |
+| TS Interface Field | Anthropic API Field    |
+| ------------------ | ---------------------- |
+| `maxTokens`        | `max_tokens`           |
+| `topP`             | `top_p`                |
+| `topK`             | `top_k`                |
+| `responseFormat`   | `response_format.type` |
+| `user`             | `metadata.user`        |
+| `metadata`         | `metadata` (merged)    |
 
 > Note: `user` is mapped to `metadata.user` because Anthropic does not support a top‑level `user` field.
 > Optional `anthropic-beta` header can be passed via `beta` field in options.
@@ -199,9 +205,9 @@ const response = await provider.chat({
 ## Middleware Compatibility
 
 | Feature        | Support |
-|----------------|---------|
-| `withRetry`    | ✅       |
-| `withFallback` | ✅       |
+| -------------- | ------- |
+| `withRetry`    | ✅      |
+| `withFallback` | ✅      |
 
 Wrap the provider with `withRetry(...)` or `withFallback([...])` to add resilience without changing your code.
 
@@ -211,12 +217,13 @@ Wrap the provider with `withRetry(...)` or `withFallback([...])` to add resilien
 for await (const chunk of provider.streamChat({
   model: "claude-3-5-sonnet-20240620",
   messages: [{ role: "user", content: "Explain quantum physics" }],
-  temperature: 0.3,            // More focused responses
-  maxTokens: 2000,             // Longer explanation
-  topP: 0.95,                 // High quality sampling
-  topK: 50,                   // Claude-specific top-k sampling
+  temperature: 0.3, // More focused responses
+  maxTokens: 2000, // Longer explanation
+  topP: 0.95, // High quality sampling
+  topK: 50, // Claude-specific top-k sampling
   stop: ["\n\n", "In conclusion"], // Natural stopping points
-  systemPrompt: "You are a physics professor explaining complex concepts simply"
+  systemPrompt:
+    "You are a physics professor explaining complex concepts simply",
 })) {
   if (chunk.done) {
     console.log(`\nFinished: ${chunk.finishReason}`);
@@ -233,12 +240,12 @@ for await (const chunk of provider.streamChat({
 
 ```ts
 interface AnthropicOptions {
-  apiKey: string;                    // Required: Your Anthropic API key
-  baseURL?: string;                  // Custom API endpoint (default: https://api.anthropic.com/v1)
-  apiVersion?: string;               // API version (default: 2023-06-01)
-  maxRetries?: number;               // Maximum retry attempts
-  timeout?: number;                  // Request timeout in ms (default: 30000)
-  fetch?: Function;                  // Custom fetch implementation
+  apiKey: string; // Required: Your Anthropic API key
+  baseURL?: string; // Custom API endpoint (default: https://api.anthropic.com/v1)
+  apiVersion?: string; // API version (default: 2023-06-01)
+  maxRetries?: number; // Maximum retry attempts
+  timeout?: number; // Request timeout in ms (default: 30000)
+  fetch?: Function; // Custom fetch implementation
 }
 ```
 
@@ -249,11 +256,11 @@ import { anthropic } from "@tetherai/anthropic";
 
 const provider = anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
-  baseURL: "https://api.anthropic.com/v1",  // Custom endpoint
-  apiVersion: "2023-06-01",                 // API version control
-  timeout: 60000,                           // 60 second timeout
-  maxRetries: 3,                            // 3 retry attempts
-  fetch: customFetch                         // Custom fetch for proxies, etc.
+  baseURL: "https://api.anthropic.com/v1", // Custom endpoint
+  apiVersion: "2023-06-01", // API version control
+  timeout: 60000, // 60 second timeout
+  maxRetries: 3, // 3 retry attempts
+  fetch: customFetch, // Custom fetch for proxies, etc.
 });
 ```
 
@@ -269,10 +276,10 @@ import { anthropic, withRetry } from "@tetherai/anthropic";
 const provider = withRetry(
   anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! }),
   {
-    retries: 3,        // Number of retry attempts
-    baseMs: 300,       // Base delay in milliseconds
-    factor: 2,         // Exponential backoff factor
-    jitter: true       // Add randomness to prevent thundering herd
+    retries: 3, // Number of retry attempts
+    baseMs: 300, // Base delay in milliseconds
+    factor: 2, // Exponential backoff factor
+    jitter: true, // Add randomness to prevent thundering herd
   }
 );
 ```
@@ -287,14 +294,19 @@ Chain multiple providers for automatic failover:
 import { anthropic, withFallback, withRetry } from "@tetherai/anthropic";
 import { openAI } from "@tetherai/openai";
 
-const provider = withFallback([
-  withRetry(anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! }), { retries: 2 }),
-  withRetry(openAI({ apiKey: process.env.OPENAI_API_KEY! }), { retries: 2 })
-], {
-  onFallback: (error, providerIndex) => {
-    console.log(`Provider ${providerIndex} failed, trying next...`);
+const provider = withFallback(
+  [
+    withRetry(anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! }), {
+      retries: 2,
+    }),
+    withRetry(openAI({ apiKey: process.env.OPENAI_API_KEY! }), { retries: 2 }),
+  ],
+  {
+    onFallback: (error, providerIndex) => {
+      console.log(`Provider ${providerIndex} failed, trying next...`);
+    },
   }
-});
+);
 ```
 
 ## Error Handling
@@ -309,7 +321,7 @@ try {
 } catch (error) {
   if (error instanceof AnthropicError) {
     console.log(`Anthropic error ${error.status}: ${error.message}`);
-    
+
     // Handle specific error types
     switch (error.status) {
       case 401: // Invalid API key

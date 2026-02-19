@@ -9,7 +9,7 @@
 
 This package provides a **complete, streaming-first solution** for local LLM models via OpenAI-compatible APIs.  
 **No external dependencies required** - includes all types, utilities, and middleware built-in.  
-Think of it as *Express for AI providers* with everything included.
+Think of it as _Express for AI providers_ with everything included.
 
 ## What's Included
 
@@ -51,18 +51,18 @@ export LOCAL_LLM_URL=http://localhost:11434
 ```ts
 import { localLLM } from "@tetherai/local";
 
-const provider = localLLM({ 
+const provider = localLLM({
   baseURL: process.env.LOCAL_LLM_URL!,
-  timeout: 60000,        // 60 second timeout for local models
-  maxRetries: 2          // Built-in retry configuration
+  timeout: 60000, // 60 second timeout for local models
+  maxRetries: 2, // Built-in retry configuration
 });
 
 for await (const chunk of provider.streamChat({
   model: "llama2:7b",
   messages: [{ role: "user", content: "Hello!" }],
-  temperature: 0.7,      // Enhanced chat options
+  temperature: 0.7, // Enhanced chat options
   maxTokens: 1000,
-  systemPrompt: "You are a helpful assistant."
+  systemPrompt: "You are a helpful assistant.",
 })) {
   if (chunk.done) break;
   process.stdout.write(chunk.delta);
@@ -77,7 +77,7 @@ const response = await provider.chat({
   messages: [{ role: "user", content: "Hello!" }],
   temperature: 0.5,
   maxTokens: 500,
-  responseFormat: "json_object"  // Get structured responses
+  responseFormat: "json_object", // Get structured responses
 });
 
 console.log(response.content);
@@ -102,20 +102,20 @@ console.log("Max tokens:", maxTokens);
 
 ## Parameter Mapping
 
-| TS Interface Field  | Local API Field            |
-|---------------------|----------------------------|
-| `maxTokens`         | `max_tokens`               |
-| `topP`              | `top_p`                    |
-| `responseFormat`    | `response_format.type`     |
+| TS Interface Field | Local API Field        |
+| ------------------ | ---------------------- |
+| `maxTokens`        | `max_tokens`           |
+| `topP`             | `top_p`                |
+| `responseFormat`   | `response_format.type` |
 
 This provider assumes OpenAI‑compatible APIs. Fields are mapped automatically.
 
 ## Middleware Compatibility
 
 | Feature        | Support |
-|----------------|---------|
-| `withRetry`    | ✅       |
-| `withFallback` | ✅       |
+| -------------- | ------- |
+| `withRetry`    | ✅      |
+| `withFallback` | ✅      |
 
 ## API Reference
 
@@ -123,11 +123,11 @@ This provider assumes OpenAI‑compatible APIs. Fields are mapped automatically.
 
 ```ts
 interface LocalLLMOptions {
-  baseURL: string;          // Required: Your local LLM endpoint
-  apiKey?: string;          // Optional: API key if required by your endpoint
-  timeout?: number;         // Optional: Request timeout in milliseconds (default: 30000)
-  maxRetries?: number;      // Optional: Built-in retry attempts (default: 2)
-  fetch?: typeof fetch;     // Optional: Custom fetch implementation
+  baseURL: string; // Required: Your local LLM endpoint
+  apiKey?: string; // Optional: API key if required by your endpoint
+  timeout?: number; // Optional: Request timeout in milliseconds (default: 30000)
+  maxRetries?: number; // Optional: Built-in retry attempts (default: 2)
+  fetch?: typeof fetch; // Optional: Custom fetch implementation
 }
 ```
 
@@ -135,17 +135,18 @@ interface LocalLLMOptions {
 
 ```ts
 const stream = provider.streamChat({
-  model: "llama2:7b",                   // Required: Model to use
-  messages: [                            // Required: Conversation history
-    { role: "user", content: "Hello" }
+  model: "llama2:7b", // Required: Model to use
+  messages: [
+    // Required: Conversation history
+    { role: "user", content: "Hello" },
   ],
-  temperature: 0.7,                      // Optional: Randomness (0.0 to 2.0)
-  maxTokens: 1000,                       // Optional: Max tokens to generate
-  topP: 0.9,                            // Optional: Nucleus sampling
-  frequencyPenalty: 0.1,                // Optional: Repetition penalty
-  presencePenalty: 0.1,                 // Optional: Topic penalty
-  stop: ["\n", "END"],                  // Optional: Stop sequences
-  systemPrompt: "You are helpful"       // Optional: System instructions
+  temperature: 0.7, // Optional: Randomness (0.0 to 2.0)
+  maxTokens: 1000, // Optional: Max tokens to generate
+  topP: 0.9, // Optional: Nucleus sampling
+  frequencyPenalty: 0.1, // Optional: Repetition penalty
+  presencePenalty: 0.1, // Optional: Topic penalty
+  stop: ["\n", "END"], // Optional: Stop sequences
+  systemPrompt: "You are helpful", // Optional: System instructions
 });
 
 // Process streaming response
@@ -163,7 +164,7 @@ const response = await provider.chat({
   messages: [{ role: "user", content: "Hello" }],
   temperature: 0.7,
   maxTokens: 1000,
-  responseFormat: "json_object"  // Get structured responses
+  responseFormat: "json_object", // Get structured responses
 });
 
 console.log(response.content);
@@ -180,37 +181,37 @@ const models = await provider.getModels();
 // Returns: ['llama2:7b', 'codellama:7b', 'mistral:7b', 'gpt-3.5-turbo']
 
 // Validate model ID (always true for local models)
-const isValid = provider.validateModel("llama2:7b");     // true
+const isValid = provider.validateModel("llama2:7b"); // true
 const isInvalid = provider.validateModel("nonexistent"); // true (local models are flexible)
 
 // Get token limits
-const maxTokens = provider.getMaxTokens("llama2:7b");        // 4096
-const codeTokens = provider.getMaxTokens("codellama:7b");    // 16384
-const mistralTokens = provider.getMaxTokens("mistral:7b");   // 8192
+const maxTokens = provider.getMaxTokens("llama2:7b"); // 4096
+const codeTokens = provider.getMaxTokens("codellama:7b"); // 16384
+const mistralTokens = provider.getMaxTokens("mistral:7b"); // 8192
 ```
 
 ## Supported Endpoints
 
-| Endpoint | URL | Description |
-|----------|-----|-------------|
-| **Ollama** | `http://localhost:11434` | Local model serving (default) |
-| **LM Studio** | `http://localhost:1234/v1` | Local model management |
-| **Custom** | `http://your-endpoint:8000` | Any OpenAI-compatible API |
-| **Network** | `http://192.168.1.100:8000` | Remote local servers |
+| Endpoint      | URL                         | Description                   |
+| ------------- | --------------------------- | ----------------------------- |
+| **Ollama**    | `http://localhost:11434`    | Local model serving (default) |
+| **LM Studio** | `http://localhost:1234/v1`  | Local model management        |
+| **Custom**    | `http://your-endpoint:8000` | Any OpenAI-compatible API     |
+| **Network**   | `http://192.168.1.100:8000` | Remote local servers          |
 
 ## Supported Models
 
 The Local provider supports any model that exposes an OpenAI-compatible API endpoint. Common local models include:
 
-| Model Family | Context Window | Description |
-|--------------|----------------|-------------|
-| **Llama** | 4K-8K tokens | Meta's open-source models |
-| **CodeLlama** | 16K tokens | Specialized for code generation |
-| **Mistral** | 8K tokens | High-performance open models |
-| **Qwen** | 32K tokens | Alibaba's large context models |
-| **Yi** | 16K tokens | 01.AI's open models |
-| **Gemma** | 8K tokens | Google's lightweight models |
-| **Phi** | 2K tokens | Microsoft's compact models |
+| Model Family  | Context Window | Description                     |
+| ------------- | -------------- | ------------------------------- |
+| **Llama**     | 4K-8K tokens   | Meta's open-source models       |
+| **CodeLlama** | 16K tokens     | Specialized for code generation |
+| **Mistral**   | 8K tokens      | High-performance open models    |
+| **Qwen**      | 32K tokens     | Alibaba's large context models  |
+| **Yi**        | 16K tokens     | 01.AI's open models             |
+| **Gemma**     | 8K tokens      | Google's lightweight models     |
+| **Phi**       | 2K tokens      | Microsoft's compact models      |
 
 > **Note**: Token limits vary by model and server configuration. The provider automatically detects common model families and sets appropriate limits.
 
@@ -224,18 +225,20 @@ import { LocalLLMError } from "@tetherai/local";
 try {
   const response = await provider.chat({
     model: "llama2:7b",
-    messages: [{ role: "user", content: "Hello" }]
+    messages: [{ role: "user", content: "Hello" }],
   });
 } catch (error) {
   if (error instanceof LocalLLMError) {
     console.error(`Local LLM Error ${error.status}: ${error.message}`);
-    
+
     switch (error.status) {
       case 404:
         console.error("Model not found - check if it's downloaded");
         break;
       case 503:
-        console.error("Service unavailable - check if Ollama/LM Studio is running");
+        console.error(
+          "Service unavailable - check if Ollama/LM Studio is running"
+        );
         break;
       case 500:
         console.error("Server error - check local LLM logs");
@@ -265,13 +268,13 @@ import { withRetry } from "@tetherai/local";
 const retryProvider = withRetry(provider, {
   maxRetries: 3,
   retryDelay: 1000,
-  shouldRetry: (error) => error.status >= 500
+  shouldRetry: (error) => error.status >= 500,
 });
 
 // Use with automatic retries
 const response = await retryProvider.chat({
   model: "llama2:7b",
-  messages: [{ role: "user", content: "Hello" }]
+  messages: [{ role: "user", content: "Hello" }],
 });
 ```
 
@@ -282,13 +285,13 @@ import { withFallback } from "@tetherai/local";
 
 const fallbackProvider = withFallback(provider, {
   fallbackProvider: cloudProvider,
-  shouldFallback: (error) => error.status === 503
+  shouldFallback: (error) => error.status === 503,
 });
 
 // Automatically fallback on service unavailability
 const response = await fallbackProvider.chat({
   model: "llama2:7b",
-  messages: [{ role: "user", content: "Hello" }]
+  messages: [{ role: "user", content: "Hello" }],
 });
 ```
 
@@ -310,10 +313,10 @@ const provider = localLLM({
 const response = await provider.chat({
   model: "llama2:7b",
   messages: [
-    { role: "user", content: "Explain machine learning in simple terms" }
+    { role: "user", content: "Explain machine learning in simple terms" },
   ],
   temperature: 0.3,
-  maxTokens: 2000
+  maxTokens: 2000,
 });
 
 console.log(response.content);
@@ -330,11 +333,12 @@ const lmStudioProvider = localLLM({
 const stream = lmStudioProvider.streamChat({
   model: "gpt-3.5-turbo",
   messages: [
-    { role: "user", content: "Write a Python function to sort a list" }
+    { role: "user", content: "Write a Python function to sort a list" },
   ],
-  systemPrompt: "You are a helpful coding assistant. Provide working code examples.",
+  systemPrompt:
+    "You are a helpful coding assistant. Provide working code examples.",
   temperature: 0.3,
-  maxTokens: 1500
+  maxTokens: 1500,
 });
 
 let fullResponse = "";
@@ -353,7 +357,7 @@ console.log("\n\nFull response:", fullResponse);
 const remoteProvider = localLLM({
   baseURL: "http://192.168.1.100:8000",
   timeout: 45000,
-  apiKey: "your-api-key" // if required
+  apiKey: "your-api-key", // if required
 });
 
 const models = await remoteProvider.getModels();
@@ -361,7 +365,7 @@ console.log("Available models:", models);
 
 const response = await remoteProvider.chat({
   model: "custom-model",
-  messages: [{ role: "user", content: "Hello from remote server!" }]
+  messages: [{ role: "user", content: "Hello from remote server!" }],
 });
 ```
 
@@ -376,13 +380,13 @@ const cloudProvider = openAI({ apiKey: process.env.OPENAI_API_KEY! });
 
 const fallbackProvider = withFallback(localProvider, {
   fallbackProvider: cloudProvider,
-  shouldFallback: (error) => error.status === 503 || error.status >= 500
+  shouldFallback: (error) => error.status === 503 || error.status >= 500,
 });
 
 try {
   const response = await fallbackProvider.chat({
     model: "llama2:7b",
-    messages: [{ role: "user", content: "Hello" }]
+    messages: [{ role: "user", content: "Hello" }],
   });
   console.log("Response:", response.content);
 } catch (error) {
@@ -401,12 +405,12 @@ const customProvider = localLLM({
       ...options,
       headers: {
         ...options.headers,
-        'X-Custom-Header': 'value'
-      }
+        "X-Custom-Header": "value",
+      },
     };
-    
+
     return fetch(url, customOptions);
-  }
+  },
 });
 ```
 
@@ -434,7 +438,7 @@ Any OpenAI-compatible API endpoint will work:
 const customProvider = localLLM({
   baseURL: "http://your-custom-endpoint:8000",
   apiKey: "your-api-key", // if required
-  timeout: 30000
+  timeout: 30000,
 });
 ```
 
@@ -443,22 +447,24 @@ const customProvider = localLLM({
 Full TypeScript support with zero `any` types:
 
 ```ts
-import { 
-  localLLM, 
-  LocalLLMOptions, 
-  LocalLLMError, 
+import {
+  localLLM,
+  LocalLLMOptions,
+  LocalLLMError,
   ChatResponse,
-  StreamChatOptions 
+  StreamChatOptions,
 } from "@tetherai/local";
 
 const options: LocalLLMOptions = {
   baseURL: "http://localhost:11434",
-  timeout: 30000
+  timeout: 30000,
 };
 
 const provider = localLLM(options);
 
-async function chatWithLocalLLM(options: StreamChatOptions): Promise<ChatResponse> {
+async function chatWithLocalLLM(
+  options: StreamChatOptions
+): Promise<ChatResponse> {
   try {
     return await provider.chat(options);
   } catch (error) {
@@ -478,18 +484,18 @@ Works everywhere from Node.js to Cloudflare Workers:
 // Cloudflare Worker
 export default {
   async fetch(request: Request): Promise<Response> {
-    const provider = localLLM({ 
+    const provider = localLLM({
       baseURL: env.LOCAL_LLM_URL,
-      fetch: globalThis.fetch 
+      fetch: globalThis.fetch,
     });
-    
+
     const response = await provider.chat({
       model: "llama2:7b",
-      messages: [{ role: "user", content: "Hello from Cloudflare!" }]
+      messages: [{ role: "user", content: "Hello from Cloudflare!" }],
     });
-    
+
     return new Response(response.content);
-  }
+  },
 };
 ```
 

@@ -21,7 +21,7 @@ Think of it as _"Express for AI providers" with everything included_.
 
 - `packages/provider/` – **standalone provider packages** (no external deps)
   - `@tetherai/openai` – OpenAI provider
-  - `@tetherai/anthropic` – Anthropic provider  
+  - `@tetherai/anthropic` – Anthropic provider
   - `@tetherai/mistral` – Mistral AI provider
   - `@tetherai/grok` – Grok AI (xAI) provider
   - `@tetherai/local` – Local LLM provider (Ollama, LM Studio, etc.)
@@ -70,11 +70,11 @@ Think of it as _"Express for AI providers" with everything included_.
 
    b. **Node.js:** POST to <http://localhost:8787/chat>:
 
-      ```bash
-      curl -N -X POST http://localhost:8787/chat \
-        -H "Content-Type: application/json" \
-        -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"Hello!"}]}'
-      ```
+   ```bash
+   curl -N -X POST http://localhost:8787/chat \
+     -H "Content-Type: application/json" \
+     -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"Hello!"}]}'
+   ```
 
 ## Usage
 
@@ -83,10 +83,10 @@ Think of it as _"Express for AI providers" with everything included_.
 ```ts
 import { openAI } from "@tetherai/openai";
 
-const provider = openAI({ 
+const provider = openAI({
   apiKey: process.env.OPENAI_API_KEY!,
-  timeout: 30000,        // 30 second timeout
-  organization: process.env.OPENAI_ORG_ID  // Organization support
+  timeout: 30000, // 30 second timeout
+  organization: process.env.OPENAI_ORG_ID, // Organization support
 });
 ```
 
@@ -97,24 +97,27 @@ import { withRetry, withFallback } from "@tetherai/openai";
 import { anthropic } from "@tetherai/anthropic";
 import { mistral } from "@tetherai/mistral";
 
-const resilientProvider = withFallback([
-  withRetry(openAI({ apiKey: process.env.OPENAI_API_KEY! }), { 
-    retries: 3,
-    baseMs: 300,
-    factor: 2,
-    jitter: true
-  }),
-  withRetry(anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! }), { 
-    retries: 2 
-  }),
-  withRetry(mistral({ apiKey: process.env.MISTRAL_API_KEY! }), { 
-    retries: 2 
-  })
-], {
-  onFallback: (error, providerIndex) => {
-    console.log(`Provider ${providerIndex} failed, trying next...`);
+const resilientProvider = withFallback(
+  [
+    withRetry(openAI({ apiKey: process.env.OPENAI_API_KEY! }), {
+      retries: 3,
+      baseMs: 300,
+      factor: 2,
+      jitter: true,
+    }),
+    withRetry(anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! }), {
+      retries: 2,
+    }),
+    withRetry(mistral({ apiKey: process.env.MISTRAL_API_KEY! }), {
+      retries: 2,
+    }),
+  ],
+  {
+    onFallback: (error, providerIndex) => {
+      console.log(`Provider ${providerIndex} failed, trying next...`);
+    },
   }
-});
+);
 ```
 
 ### Stream a Chat Completion
