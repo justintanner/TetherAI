@@ -131,7 +131,7 @@ export function kieMedia(opts: KIEMediaOptions): KIEMediaProvider {
     },
 
     async getCredits(): Promise<KIECreditsResponse> {
-      const res = await doFetch(`${baseURL}/api/v1/user/credits`, {
+      const res = await doFetch(`${baseURL}/api/v1/chat/credit`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${opts.apiKey}`,
@@ -149,16 +149,12 @@ export function kieMedia(opts: KIEMediaOptions): KIEMediaProvider {
       interface CreditsApiResponse {
         code: number;
         msg: string;
-        data?: {
-          balance?: number;
-          totalUsed?: number;
-          currency?: string;
-        };
+        data?: number;
       }
 
       const response: CreditsApiResponse = await res.json();
 
-      if (response.code !== 200 || !response.data) {
+      if (response.code !== 200 || response.data === undefined) {
         throw new KIEMediaError(
           response.msg || `API error: ${response.code}`,
           response.code
@@ -166,9 +162,9 @@ export function kieMedia(opts: KIEMediaOptions): KIEMediaProvider {
       }
 
       return {
-        balance: response.data.balance ?? 0,
-        totalUsed: response.data.totalUsed ?? 0,
-        currency: response.data.currency ?? "credits",
+        balance: response.data,
+        totalUsed: 0, // API doesn't return total used
+        currency: "credits",
       };
     },
   };
