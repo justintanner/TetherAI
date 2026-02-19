@@ -99,7 +99,7 @@ describe("KIE Media Provider - Real API Tests with PollyJS", () => {
       const status = await provider.getTaskStatus(response.taskId);
       expect(status).toHaveProperty("taskId");
       expect(status).toHaveProperty("status");
-      expect(["PENDING", "PROCESSING", "SUCCESS", "FAILED"]).toContain(
+      expect(["pending", "processing", "completed", "failed"]).toContain(
         status.status
       );
 

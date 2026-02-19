@@ -10,8 +10,16 @@ export type KIEMediaModel =
 // Media generation types
 export type MediaType = "image" | "video";
 
-// Task status
+// Task status (internal representation)
 export type TaskStatus = "pending" | "processing" | "completed" | "failed";
+
+// KIE API task states (from recordInfo endpoint)
+export type KIETaskState =
+  | "waiting"
+  | "queuing"
+  | "generating"
+  | "success"
+  | "fail";
 
 // Kling element for video generation
 export interface KlingElement {
@@ -142,18 +150,28 @@ export interface TaskResponse {
   taskId: string;
 }
 
-// Task status details
+// Task status details (from KIE API recordInfo endpoint)
 export interface TaskStatusDetails {
   taskId: string;
   status: TaskStatus;
+  state?: KIETaskState; // Original KIE API state
   progress?: number;
+  model?: string;
+  param?: string; // JSON string of original request params
   result?: {
     urls?: string[];
+    resultUrls?: string[]; // From resultJson parsing
     video_url?: string;
     image_url?: string;
     [key: string]: unknown;
   };
   error?: string;
+  failCode?: string;
+  failMsg?: string;
+  createTime?: number;
+  updateTime?: number;
+  completeTime?: number;
+  costTime?: number;
 }
 
 // Completed task result

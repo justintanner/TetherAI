@@ -4,25 +4,33 @@ import {
   TaskResult,
   WaitOptions,
   KIEMediaError,
+  KIETaskState,
 } from "./types";
 
+// KIE API response structure from recordInfo endpoint
 interface KIEApiResponse {
   code: number;
   msg: string;
   data?: {
     taskId?: string;
-    status?: string;
+    model?: string;
+    state?: KIETaskState;
+    param?: string;
+    resultJson?: string;
+    failCode?: string;
+    failMsg?: string;
     progress?: number;
-    urls?: string[];
-    video_url?: string;
-    image_url?: string;
-    result?: {
-      urls?: string[];
-      video_url?: string;
-      image_url?: string;
-    };
-    [key: string]: unknown;
+    createTime?: number;
+    updateTime?: number;
+    completeTime?: number;
+    costTime?: number;
   };
+}
+
+// Parsed result from resultJson
+interface KIEResultJson {
+  resultUrls?: string[];
+  [key: string]: unknown;
 }
 
 export class TaskPoller {
@@ -38,7 +46,7 @@ export class TaskPoller {
 
   async getTaskStatus(taskId: string): Promise<TaskStatusDetails> {
     const res = await this.doFetch(
-      `${this.baseURL}/market/common/get-task-detail?taskId=${encodeURIComponent(taskId)}`,
+      `${this.baseURL}/api/v1/jobs/recordInfo?taskId=${encodeURIComponent(taskId)}`,
       {
         method: "GET",
         headers: {
@@ -55,26 +63,56 @@ export class TaskPoller {
       );
     }
 
-    const data: KIEApiResponse = await res.json();
+    const response: KIEApiResponse = await res.json();
 
-    if (data.code !== 200) {
-      throw new KIEMediaError(data.msg || `API error: ${data.code}`, data.code);
+    if (response.code !== 200) {
+      throw new KIEMediaError(
+        response.msg || `API error: ${response.code}`,
+        response.code
+      );
     }
 
-    const status = this.mapStatus(data.data?.status || "pending");
-    const result = data.data?.result || data.data;
+    const data = response.data;
+    if (!data) {
+      throw new KIEMediaError("No data in API response", 500);
+    }
+
+    // Parse resultJson if present
+    let parsedResult: KIEResultJson | undefined;
+    if (data.resultJson) {
+      try {
+        parsedResult = JSON.parse(data.resultJson) as KIEResultJson;
+      } catch {
+        // Ignore parse errors
+      }
+    }
+
+    // Map KIE state to internal status
+    const status = this.mapStateToStatus(data.state);
 
     return {
-      taskId,
+      taskId: data.taskId || taskId,
       status,
-      progress: data.data?.progress,
-      result: result
+      state: data.state,
+      progress: data.progress,
+      model: data.model,
+      param: data.param,
+      result: parsedResult
         ? {
-            urls: result.urls,
-            video_url: result.video_url,
-            image_url: result.image_url,
+            urls: parsedResult.resultUrls,
+            resultUrls: parsedResult.resultUrls,
           }
         : undefined,
+      error:
+        status === "failed"
+          ? data.failMsg || `Task failed with code: ${data.failCode}`
+          : undefined,
+      failCode: data.failCode,
+      failMsg: data.failMsg,
+      createTime: data.createTime,
+      updateTime: data.updateTime,
+      completeTime: data.completeTime,
+      costTime: data.costTime,
     };
   }
 
@@ -83,9 +121,9 @@ export class TaskPoller {
     options: WaitOptions = {}
   ): Promise<TaskResult> {
     const {
-      intervalMs = 2000,
-      maxAttempts = 150,
-      timeoutMs = 300000,
+      intervalMs = 3000, // Start with 3s as recommended by docs
+      maxAttempts = 300, // ~15 minutes with 3s interval
+      timeoutMs = 900000, // 15 minutes
       onProgress,
     } = options;
 
@@ -109,17 +147,18 @@ export class TaskPoller {
       }
 
       if (status.status === "completed") {
-        const urls = status.result?.urls || [];
-        const videoUrl = status.result?.video_url;
-        const imageUrl = status.result?.image_url;
+        const urls = status.result?.resultUrls || status.result?.urls || [];
 
         return {
           taskId,
           status: "completed",
           urls,
-          videoUrl,
-          imageUrl,
-          metadata: status.result,
+          metadata: {
+            model: status.model,
+            costTime: status.costTime,
+            createTime: status.createTime,
+            completeTime: status.completeTime,
+          },
         };
       }
 
@@ -128,11 +167,20 @@ export class TaskPoller {
           taskId,
           status: "failed",
           urls: [],
-          error: status.error || "Task failed",
+          error: status.failMsg || status.error || "Task failed",
+          metadata: {
+            failCode: status.failCode,
+            model: status.model,
+          },
         };
       }
 
-      await this.sleep(intervalMs);
+      // Exponential backoff: start at 3s, max 30s
+      const backoffDelay = Math.min(
+        intervalMs * Math.pow(1.1, attempts),
+        30000
+      );
+      await this.sleep(Math.floor(backoffDelay));
     }
 
     throw new KIEMediaError(
@@ -141,16 +189,18 @@ export class TaskPoller {
     );
   }
 
-  private mapStatus(apiStatus: string): TaskStatus {
-    const statusMap: Record<string, TaskStatus> = {
-      pending: "pending",
-      processing: "processing",
-      completed: "completed",
-      failed: "failed",
+  private mapStateToStatus(state?: KIETaskState): TaskStatus {
+    if (!state) return "pending";
+
+    const stateMap: Record<KIETaskState, TaskStatus> = {
+      waiting: "pending",
+      queuing: "processing",
+      generating: "processing",
       success: "completed",
-      error: "failed",
+      fail: "failed",
     };
-    return statusMap[apiStatus.toLowerCase()] || "pending";
+
+    return stateMap[state] || "pending";
   }
 
   private sleep(ms: number): Promise<void> {
