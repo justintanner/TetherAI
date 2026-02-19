@@ -9,7 +9,7 @@ import { resolve } from "path";
 Polly.register(FetchAdapter);
 Polly.register(FSPersister);
 
-describe("KIE Media Provider - Real API Tests with PollyJS", () => {
+describe("KIE Media Provider - API Endpoints", () => {
   let polly: Polly;
   const apiKey = process.env.KIE_API_KEY || "";
 
@@ -44,7 +44,7 @@ describe("KIE Media Provider - Real API Tests with PollyJS", () => {
           hash: false,
         },
       },
-      logging: true,
+      logging: false,
     });
 
     // Hide API key in recordings
@@ -62,8 +62,8 @@ describe("KIE Media Provider - Real API Tests with PollyJS", () => {
     await polly.stop();
   });
 
-  describe("grok-imagine/image-to-video", () => {
-    it("should create an image-to-video task successfully", async () => {
+  describe("1. Create Task Endpoint", () => {
+    it("POST /api/v1/jobs/createTask - should create a grok-imagine/image-to-video task", async () => {
       if (!apiKey) {
         console.warn("⚠️  KIE_API_KEY not set, skipping real API test");
         return;
@@ -71,7 +71,6 @@ describe("KIE Media Provider - Real API Tests with PollyJS", () => {
 
       const provider = kieMedia({ apiKey });
 
-      // Use a sample image URL for testing
       const request = {
         model: "grok-imagine/image-to-video" as const,
         input: {
@@ -88,22 +87,101 @@ describe("KIE Media Provider - Real API Tests with PollyJS", () => {
 
       const response = await provider.createTask(request);
 
-      // Verify we got a task ID back
       expect(response).toHaveProperty("taskId");
       expect(typeof response.taskId).toBe("string");
       expect(response.taskId.length).toBeGreaterThan(0);
 
-      console.log("✅ Task created successfully with ID:", response.taskId);
+      console.log("✅ Create Task Response:", response);
+    }, 30000);
 
-      // Optionally check the task status (this will be a second API call)
-      const status = await provider.getTaskStatus(response.taskId);
+    it("POST /api/v1/jobs/createTask - should create a kling-3.0/video task", async () => {
+      if (!apiKey) {
+        console.warn("⚠️  KIE_API_KEY not set, skipping real API test");
+        return;
+      }
+
+      const provider = kieMedia({ apiKey });
+
+      const request = {
+        model: "kling-3.0/video" as const,
+        input: {
+          prompt: "A futuristic cityscape at sunset with flying cars",
+          sound: false,
+          duration: "5" as const,
+          aspect_ratio: "16:9" as const,
+          mode: "std" as const,
+          multi_shots: false,
+        },
+      };
+
+      const response = await provider.createTask(request);
+
+      expect(response).toHaveProperty("taskId");
+      expect(typeof response.taskId).toBe("string");
+      expect(response.taskId.length).toBeGreaterThan(0);
+
+      console.log("✅ Create Kling Task Response:", response);
+    }, 30000);
+  });
+
+  describe("2. Query Task Status Endpoint", () => {
+    it("GET /api/v1/jobs/recordInfo - should query task status", async () => {
+      if (!apiKey) {
+        console.warn("⚠️  KIE_API_KEY not set, skipping real API test");
+        return;
+      }
+
+      const provider = kieMedia({ apiKey });
+
+      // First create a task to get a valid taskId
+      const createResponse = await provider.createTask({
+        model: "grok-imagine/text-to-image",
+        input: {
+          prompt: "A beautiful sunset over mountains",
+          aspect_ratio: "16:9",
+        },
+      });
+
+      expect(createResponse.taskId).toBeDefined();
+
+      // Now query the task status
+      const status = await provider.getTaskStatus(createResponse.taskId);
+
       expect(status).toHaveProperty("taskId");
       expect(status).toHaveProperty("status");
+      expect(status).toHaveProperty("state");
       expect(["pending", "processing", "completed", "failed"]).toContain(
         status.status
       );
+      expect(["waiting", "queuing", "generating", "success", "fail"]).toContain(
+        status.state
+      );
 
-      console.log("📊 Task status:", status.status);
-    }, 30000); // 30 second timeout for API call
+      console.log("✅ Query Task Status Response:", status);
+    }, 30000);
+  });
+
+  describe("3. Get User Credits Endpoint", () => {
+    it("GET /api/v1/user/credits - should retrieve account credits", async () => {
+      if (!apiKey) {
+        console.warn("⚠️  KIE_API_KEY not set, skipping real API test");
+        return;
+      }
+
+      const provider = kieMedia({ apiKey });
+
+      const credits = await provider.getCredits();
+
+      expect(credits).toHaveProperty("balance");
+      expect(credits).toHaveProperty("totalUsed");
+      expect(credits).toHaveProperty("currency");
+      expect(typeof credits.balance).toBe("number");
+      expect(typeof credits.totalUsed).toBe("number");
+      expect(typeof credits.currency).toBe("string");
+      expect(credits.balance).toBeGreaterThanOrEqual(0);
+      expect(credits.totalUsed).toBeGreaterThanOrEqual(0);
+
+      console.log("✅ Get Credits Response:", credits);
+    }, 10000);
   });
 });

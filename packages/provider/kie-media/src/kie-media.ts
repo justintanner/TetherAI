@@ -8,6 +8,7 @@ import {
   KIEMediaProvider,
   MediaType,
   KIEMediaError,
+  KIECreditsResponse,
 } from "./types";
 import { TaskPoller } from "./polling";
 
@@ -127,6 +128,48 @@ export function kieMedia(opts: KIEMediaOptions): KIEMediaProvider {
 
     getModelType(modelId: string): MediaType | null {
       return SUPPORTED_MODELS[modelId]?.type || null;
+    },
+
+    async getCredits(): Promise<KIECreditsResponse> {
+      const res = await doFetch(`${baseURL}/api/v1/user/credits`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${opts.apiKey}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!res.ok) {
+        throw new KIEMediaError(
+          `Failed to get credits: ${res.status}`,
+          res.status
+        );
+      }
+
+      interface CreditsApiResponse {
+        code: number;
+        msg: string;
+        data?: {
+          balance?: number;
+          totalUsed?: number;
+          currency?: string;
+        };
+      }
+
+      const response: CreditsApiResponse = await res.json();
+
+      if (response.code !== 200 || !response.data) {
+        throw new KIEMediaError(
+          response.msg || `API error: ${response.code}`,
+          response.code
+        );
+      }
+
+      return {
+        balance: response.data.balance ?? 0,
+        totalUsed: response.data.totalUsed ?? 0,
+        currency: response.data.currency ?? "credits",
+      };
     },
   };
 }

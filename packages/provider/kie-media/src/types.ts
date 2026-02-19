@@ -218,6 +218,13 @@ export class KIEMediaError extends Error {
   }
 }
 
+// Credits response
+export interface KIECreditsResponse {
+  balance: number;
+  totalUsed: number;
+  currency: string;
+}
+
 // Provider interface
 export interface KIEMediaProvider {
   createTask(req: MediaGenerationRequest): Promise<TaskResponse>;
@@ -227,6 +234,7 @@ export interface KIEMediaProvider {
     req: MediaGenerationRequest,
     options?: WaitOptions
   ): Promise<TaskResult>;
+  getCredits(): Promise<KIECreditsResponse>;
   validateModel(modelId: string): boolean;
   getModels(): string[];
   getModelType(modelId: string): MediaType | null;
